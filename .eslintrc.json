@@ -1,0 +1,63 @@
+{
+  "plugins": ["@typescript-eslint"],
+  "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "prettier"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@next/next/no-img-element": "off",
+    "import/no-anonymous-default-export": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "import/order": [
+      "warn",
+      {
+        "groups": [
+          "type",
+          "builtin",
+          "object",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "pathGroups": [
+          {
+            "pattern": "~/**",
+            "group": "external",
+            "position": "after"
+          }
+        ],
+        "newlines-between": "always"
+      }
+    ],
+    "react/self-closing-comp": "warn",
+    "react/jsx-sort-props": [
+      "warn",
+      {
+        "callbacksLast": true,
+        "shorthandFirst": true,
+        "noSortAlphabetically": false,
+        "reservedFirst": true
+      }
+    ],
+    "padding-line-between-statements": [
+      "warn",
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": ["return", "export"]
+      },
+      {
+        "blankLine": "always",
+        "prev": ["const", "let", "var"],
+        "next": "*"
+      },
+      {
+        "blankLine": "any",
+        "prev": ["const", "let", "var"],
+        "next": ["const", "let", "var"]
+      }
+    ]
+  }
+}
