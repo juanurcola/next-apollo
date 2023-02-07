@@ -1,72 +1,55 @@
 import mongoose from "mongoose";
 
-// const connectDB = async () => {
-//   try {
-//     mongoose.set("strictQuery", false);
+const MONGODB_URI = process.env.MONGO_URI;
 
-//     const mongodb = await connect(`${process.env.MONGO_URI}`, {
-//       user: `${process.env.MONGO_USERNAME}`,
-//       pass: `${process.env.MONGO_PASSWORD}`,
-//       dbName: `${process.env.MONGO_DB}`,
-//     });
+if (!MONGODB_URI) {
+  throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
+}
 
-//     console.log(`MongoDB hosted on: ${mongodb.connection.host}`);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development. This prevents connections growing exponentially
+ * during API Route usage.
+ */
 
-//  export default connectDB;
+let cached = global.mongoose;
 
-let connections = 0;
+if (!cached) {
+  cached = global.mongoose = {conn: null, promise: null};
+}
 
-const connect = async () => {
-  try {
-    if (connections) {
-      console.log("MongoDB: Already connected");
+mongoose.set("strictQuery", false);
 
-      return;
-    }
+async function dbConnect() {
+  if (cached.conn) {
+    console.log("MongoDB: Already connected");
 
-    if (mongoose.connections.length > 0) {
-      connections = mongoose.connections[0].readyState;
+    return cached.conn;
+  }
 
-      if (connections === 1) {
-        console.log("MongoDB: Using previous connection");
-
-        return;
-      }
-
-      await mongoose.disconnect();
-    }
-
-    mongoose.set("strictQuery", false);
-
-    const mongodb = await mongoose.connect(`${process.env.MONGO_URI}`, {
+  if (!cached.promise) {
+    const opts = {
       user: `${process.env.MONGO_USERNAME}`,
       pass: `${process.env.MONGO_PASSWORD}`,
       dbName: `${process.env.MONGO_DB}`,
+      bufferCommands: false,
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+      return mongoose;
     });
-
-    connections = 1;
-    console.log(`MongoDB: Hosted on ${mongodb.connection.host}`);
-  } catch (error) {
-    console.log(error);
+    console.log("\nMongoDB: Creating new connection");
   }
-};
 
-const disconnect = async () => {
-  if (process.env.NODE_ENV === "development") return;
+  try {
+    cached.conn = await cached.promise;
+    console.log(`MongoDB: Hosted on ${cached.conn.connection.host}`);
+  } catch (e) {
+    cached.promise = null;
+    throw e;
+  }
 
-  if (connections === 0) return;
+  return cached.conn;
+}
 
-  await mongoose.disconnect();
-  connections = 0;
-
-  console.log("MongoDB: Disconnected");
-};
-
-export default {
-  connect,
-  disconnect,
-};
+export default dbConnect;

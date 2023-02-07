@@ -1,8 +1,9 @@
 import {GetServerSideProps} from "next";
+import Link from "next/link";
 
+import dbConnect from "server/db";
+import {getSales} from "services/SaleService";
 import {ISale} from "types/ISale";
-import {client} from "lib/apollo";
-import Queries from "client/graphql/Queries";
 
 interface Props {
   sales: ISale[];
@@ -17,22 +18,26 @@ const HomePage: React.FC<Props> = ({sales}) => {
     );
 
   return (
-    <>
-      <pre>
-        <code>{JSON.stringify(sales, null, 4)}</code>
-      </pre>
-    </>
+    <div>
+      {sales.map((sale) => (
+        <div key={sale._id}>
+          <p>{sale.title}</p>
+          <Link href={`/${sale.slug}`}>/{sale.slug}</Link>
+        </div>
+      ))}
+    </div>
   );
 };
 
 export default HomePage;
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const {data} = await client.query({query: Queries.GET_SALES, fetchPolicy: "no-cache"});
+  await dbConnect();
+  const sales = await getSales();
 
   return {
     props: {
-      sales: data.sales,
+      sales: JSON.parse(JSON.stringify(sales)),
     },
   };
 };
