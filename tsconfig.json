@@ -15,6 +15,7 @@
     "jsx": "preserve",
     "incremental": true,
     "suppressImplicitAnyIndexErrors": true,
+    "useUnknownInCatchVariables": false,
     "noImplicitAny": false,
     "baseUrl": ".",
     "paths": {

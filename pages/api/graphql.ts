@@ -6,9 +6,9 @@ import {NextApiRequest, NextApiResponse} from "next";
 
 import typeDefs from "server/graphql/schemas";
 import resolvers from "server/graphql/resolvers";
-import connectDB from "db/config";
+import db from "server/db";
 
-connectDB();
+db.connect();
 
 type Context = {
   req: NextApiRequest;
