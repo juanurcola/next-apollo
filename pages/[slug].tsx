@@ -2,8 +2,6 @@ import React from "react";
 import {GetStaticPaths, GetStaticProps} from "next";
 
 import {ISale} from "types/ISale";
-import {client} from "lib/apollo";
-import Queries from "client/graphql/Queries";
 
 interface Props {
   sale: ISale;
@@ -29,25 +27,22 @@ const SalePage: React.FC<Props> = ({sale}) => {
 export default SalePage;
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const {data} = await client.query({query: Queries.GET_SALES, fetchPolicy: "no-cache"});
+  const res = await fetch(`${process.env.NEXT_PUBLIC_URL_SITE}/api/sales`);
+  const sales = await res.json();
 
   return {
-    paths: data.sales.map((sale) => ({params: {slug: sale.slug}})),
+    paths: sales.map((sale) => ({params: {slug: sale.slug}})),
     fallback: "blocking",
   };
 };
 
 export const getStaticProps: GetStaticProps = async ({params}) => {
-  const {data} = await client.query({
-    query: Queries.GET_SALE_SLUG,
-    variables: {slug: params?.slug},
-    fetchPolicy: "no-cache",
-  });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_URL_SITE}/api/sales/${params?.slug}`);
+  const sale = await res.json();
 
   return {
     props: {
-      sale: data.sale,
+      sale: sale,
     },
-    revalidate: 10,
   };
 };
