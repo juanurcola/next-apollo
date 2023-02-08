@@ -1,4 +1,5 @@
 import {GetServerSideProps} from "next";
+import Link from "next/link";
 
 import {ISale} from "types/ISale";
 import {client} from "lib/apollo";
@@ -17,11 +18,14 @@ const HomePage: React.FC<Props> = ({sales}) => {
     );
 
   return (
-    <>
-      <pre>
-        <code>{JSON.stringify(sales, null, 4)}</code>
-      </pre>
-    </>
+    <div>
+      {sales.map((sale) => (
+        <div key={sale._id}>
+          <p>{sale.title}</p>
+          <Link href={`/${sale.slug}`}>/{sale.slug}</Link>
+        </div>
+      ))}
+    </div>
   );
 };
 
