@@ -2,8 +2,7 @@ import React from "react";
 import {GetStaticPaths, GetStaticProps} from "next";
 
 import {ISale} from "types/ISale";
-import {client} from "lib/apollo";
-import Queries from "client/graphql/Queries";
+import queryGraphql from "shared/query-graphql";
 
 interface Props {
   sale: ISale;
@@ -28,26 +27,39 @@ const SalePage: React.FC<Props> = ({sale}) => {
 
 export default SalePage;
 
+export const getStaticProps: GetStaticProps = async ({params}) => {
+  const query = `
+  query GetSaleSlug($slug: String!) {
+    sale: getSaleSlug(slug: $slug) {
+      _id
+      slug
+      title
+    }
+  }
+  `;
+  const {data} = await queryGraphql(query, {slug: params?.slug});
+
+  return {
+    props: {
+      sale: data?.sale,
+    },
+  };
+};
+
 export const getStaticPaths: GetStaticPaths = async () => {
-  const {data} = await client.query({query: Queries.GET_SALES, fetchPolicy: "no-cache"});
+  const query = `
+  query GetSales {
+    sales : getSales {
+      _id
+      slug
+      title
+    }
+  }`;
+
+  const {data} = (await queryGraphql(query)) as {data: {sales: ISale[]}};
 
   return {
     paths: data.sales.map((sale) => ({params: {slug: sale.slug}})),
     fallback: "blocking",
-  };
-};
-
-export const getStaticProps: GetStaticProps = async ({params}) => {
-  const {data} = await client.query({
-    query: Queries.GET_SALE_SLUG,
-    variables: {slug: params?.slug},
-    fetchPolicy: "no-cache",
-  });
-
-  return {
-    props: {
-      sale: data.sale,
-    },
-    revalidate: 10,
   };
 };

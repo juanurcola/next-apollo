@@ -14,7 +14,6 @@ export const getSales = async () => {
 
 export const getSaleSlug = async (_, args) => {
   try {
-    console.log(args);
     const {slug} = args;
     const sale = await Sale.findOne({slug: slug});
 

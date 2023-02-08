@@ -20,17 +20,7 @@ export const schema = makeExecutableSchema({
   resolvers,
 });
 
-const server = new ApolloServer<Context>({
-  schema,
-  includeStacktraceInErrorResponses: process.env.NODE_ENV != "production",
-  formatError: (formattedError) => {
-    if (process.env.NODE_ENV === "production" || process.env.APOLLO_LOG_ERROR === "true") {
-      return {message: formattedError.message};
-    } else {
-      return formattedError;
-    }
-  },
-});
+const server = new ApolloServer<Context>({schema});
 
 export default startServerAndCreateNextHandler(server, {
   context: async (req, res) => ({req, res}),
